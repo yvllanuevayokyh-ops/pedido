@@ -10,11 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class ProductoServicesImlp implements ProductoService {
+public class ProductoServiceImpl implements ProductoService {
+    
+    private final ProductoRepository repository;
 
     @Autowired
-    private ProductoRepository repository;
-
+    public ProductoServiceImpl(ProductoRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -25,38 +28,38 @@ public class ProductoServicesImlp implements ProductoService {
     @Override
     @Transactional(readOnly = true)
     public Page<Producto> search(String texto, Pageable pageable) {
-        if (texto == null || texto.isBlank()) {
-            return repository.findAll(pageable);
-        }
-        return repository.findByNombreContainingIgnoreCase(texto, pageable);
+        return repository.findProductoByNombreContainingIgnoreCase(texto, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Producto findById(Long id) {
-        return repository.findById(id).orElseThrow();
+    public Producto findByID(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
     }
 
     @Override
+    @Transactional
     public Producto create(Producto producto) {
-        producto.setId(null);
         return repository.save(producto);
     }
 
     @Override
+    @Transactional
     public Producto update(Long id, Producto producto) {
-        Producto updated = findById(id);
-        updated.setNombre(producto.getNombre());
-        updated.setCodigo(producto.getCodigo());
-        updated.setPrecioUnitario(producto.getPrecioUnitario());
-        return repository.save(updated);
+        Producto productoExistente = findByID(id);
+        
+        productoExistente.setNombre(producto.getNombre());
+        productoExistente.setCodigo(producto.getCodigo());
+        productoExistente.setPrecioUnitario(producto.getPrecioUnitario());  // CORREGIDO
+        
+        return repository.save(productoExistente);
     }
-
 
     @Override
     @Transactional
     public void deleteById(Long id) {
-        repository.deleteById(id);
-
+        Producto producto = findByID(id);
+        repository.deleteById(producto.getId());
     }
 }

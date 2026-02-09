@@ -7,9 +7,8 @@ import org.springframework.data.domain.Pageable;
 public interface ClienteService {
     Page<Cliente> findAll(Pageable pageable);
     Page<Cliente> search(String texto, Pageable pageable);
-    Cliente findById(Long id);
-    Cliente create(Cliente producto);
+    Cliente findByID(Long id);
+    Cliente create(Cliente cliente);
     Cliente update(Long id, Cliente cliente);
     void deleteById(Long id);
 }
-
